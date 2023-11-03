@@ -7,6 +7,8 @@ from rest_framework.decorators import api_view
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login
 from rest_framework.authtoken.models import Token
+from rest_framework.authentication import TokenAuthentication
+from rest_framework.permissions import IsAuthenticated
 
 @api_view(['POST'])
 def user_login(request):
@@ -55,9 +57,28 @@ def user_registration(request):
             return Response({"message": "User registration failed"}, status=status.HTTP_400_BAD_REQUEST)
 
 class TransactionList(generics.ListCreateAPIView):
+    authentication_classes = (TokenAuthentication,)
+    permission_classes = (IsAuthenticated,)
     queryset = Transaction.objects.all()
     serializer_class = TransactionSerializer
 
+    def perform_create(self, serializer):
+        # Associate the transaction with the authenticated user
+        serializer.save(user=self.request.user)
+
 class TransactionDetail(generics.RetrieveUpdateDestroyAPIView):
+    authentication_classes = (TokenAuthentication,)
+    permission_classes = (IsAuthenticated,)
     queryset = Transaction.objects.all()
     serializer_class = TransactionSerializer
+
+@api_view(['POST'])
+def create_transaction(request):
+    if request.method == 'POST':
+        serializer = TransactionSerializer(data=request.data)
+        if serializer.is_valid():
+            # Associate the transaction with the authenticated user
+            serializer.validated_data['user'] = request.user
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
