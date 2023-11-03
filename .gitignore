@@ -1,0 +1,4 @@
+/Scripts
+/lib
+*.sqlite3
+*.cfg
