@@ -59,7 +59,9 @@ def user_registration(request):
 class TransactionList(generics.ListCreateAPIView):
     authentication_classes = (TokenAuthentication,)
     permission_classes = (IsAuthenticated,)
-    queryset = Transaction.objects.all()
+
+    def get_queryset(self):
+            return Transaction.objects.filter(user=self.request.user)
     serializer_class = TransactionSerializer
 
     def perform_create(self, serializer):
@@ -69,16 +71,6 @@ class TransactionList(generics.ListCreateAPIView):
 class TransactionDetail(generics.RetrieveUpdateDestroyAPIView):
     authentication_classes = (TokenAuthentication,)
     permission_classes = (IsAuthenticated,)
-    queryset = Transaction.objects.all()
+    def get_queryset(self):
+            return Transaction.objects.filter(user=self.request.user)
     serializer_class = TransactionSerializer
-
-@api_view(['POST'])
-def create_transaction(request):
-    if request.method == 'POST':
-        serializer = TransactionSerializer(data=request.data)
-        if serializer.is_valid():
-            # Associate the transaction with the authenticated user
-            serializer.validated_data['user'] = request.user
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
