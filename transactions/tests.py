@@ -1,11 +1,11 @@
 from django.test import TestCase
-from django.contrib.auth.models import User
+from user.models import CustomUser 
 from .models import Transaction 
 
 class TransactionModelTest(TestCase):
     def setUp(self):
         # Create a user for testing
-        self.user = User.objects.create_user(username='testuser', password='testpassword')
+        self.user = CustomUser.objects.create_user(username='testuser', password='testpassword')
 
     def test_create_transaction(self):
         # Create a transaction and associate it with the user
