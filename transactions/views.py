@@ -9,12 +9,20 @@ from django.contrib.auth import authenticate, login
 from rest_framework.authtoken.models import Token
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
-
-
+from user.models import CustomUser
+import json
 class TransactionList(generics.ListCreateAPIView):
     authentication_classes = (TokenAuthentication,)
     permission_classes = (IsAuthenticated,)
     serializer_class = TransactionSerializer
+
+    def post(self, request, format=None):
+        serializer = TransactionSerializer(data=request.data)
+        if serializer.is_valid():
+            # Associate the transaction with the authenticated user
+            serializer.save(user=request.user)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def get_queryset(self):
         queryset = Transaction.objects.filter(user=self.request.user)  # Filter transactions for the authenticated user
@@ -55,6 +63,8 @@ class BalanceView(APIView):
 
     def get(self, request):
         user = request.user  # The authenticated user
-        balance = user.balance  # Replace with your logic to retrieve the user's balance
-
+        # balance = user.balance  # Replace with your logic to retrieve the user's balance
+        # balance = CustomUser.objects.filter(username=user.username).values()[0]
+        balance = CustomUser.objects.get(username=user.username).balance
         return Response({"balance": balance}, status=status.HTTP_200_OK)
+        # return Response({"balance": json.dumps(balance)}, status=status.HTTP_200_OK)

@@ -2,7 +2,7 @@ from rest_framework import status, generics
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.decorators import api_view
-from django.contrib.auth.models import User
+from .models import CustomUser
 from django.contrib.auth import authenticate, login
 from rest_framework.authtoken.models import Token
 from rest_framework.authentication import TokenAuthentication
@@ -40,11 +40,11 @@ def user_registration(request):
         password = data.get('password')
 
         # Check if the username is already taken
-        if User.objects.filter(username=username).exists():
+        if CustomUser.objects.filter(username=username).exists():
             return Response({"message": "Username already exists"}, status=status.HTTP_400_BAD_REQUEST)
 
         # Create a new user
-        user = User.objects.create_user(username=username, password=password)
+        user = CustomUser.objects.create_user(username=username, password=password)
 
         # Authenticate the user to generate a token (you can use TokenAuthentication)
         user = authenticate(username=username, password=password)
