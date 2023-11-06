@@ -1,0 +1,6 @@
+/Scripts
+/lib
+*.sqlite3
+*.cfg
+/transactions/migrations
+/transactions/__pycache__
